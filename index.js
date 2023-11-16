@@ -107,10 +107,13 @@ export default struct IconFont {
     `
   );
   fs.writeFileSync(path.join(toDir, "./index.ets"), tem);
+  console.log("生成完毕");
 }
 
 async function run(url) {
-  const res = await axios.get(url);
+  const res = await axios.get(url).catch(() => {
+    console.log("获取iconfont失败");
+  });
   const mathes_1 = String(res.data).match(/'<svg>(.+?)<\/svg>'/);
   if (!mathes_1[1]) {
     throw new Error("无法解析出正确的SVG");
