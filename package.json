@@ -2,6 +2,12 @@
   "name": "ohos-iconfont",
   "version": "0.0.3-alpha",
   "description": "create iconfont for harmonyOS",
+  "keywords": [
+    "iconfont",
+    "arkts",
+    "ohos",
+    "harmonyOS"
+  ],
   "main": "index.js",
   "bin": {
     "OIconfont": "./index.js"
