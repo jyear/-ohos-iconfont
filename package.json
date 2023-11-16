@@ -1,5 +1,5 @@
 {
-  "name": "@ohos/iconfont",
+  "name": "ohos-iconfont",
   "version": "0.0.1-alpha",
   "description": "create iconfont for harmonyOS",
   "main": "index.js",
