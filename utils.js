@@ -45,6 +45,27 @@ export default struct IconFont {
   }
 }`;
 
+function parseSvg2Object(obj) {
+  const symbols = obj.svg.symbol;
+  const result = {};
+  symbols.forEach((item) => {
+    const id = item.$.id;
+    const usePaths = item.path.map((p) => {
+      return {
+        path: p.$.d,
+        fill: p.$.fill,
+      };
+    });
+
+    result[id] = {
+      id: item.$.id,
+      viewPort: item.$.viewBox,
+      paths: usePaths,
+    };
+  });
+  return result;
+}
+
 function consoleString(str, color = "default") {
   const colorsMap = {
     red: "\x1b[31m%s\x1b[0m",
@@ -59,7 +80,31 @@ function consoleString(str, color = "default") {
   console.log(colorsMap[color], str);
 }
 
+function parseSvg(str) {
+  return new Promise((resolve, reject) => {
+    xml2js.parseString(
+      `<svg>${str}</svg>`,
+      {
+        rootName: "svg",
+      },
+      (err, result) => {
+        if (result) {
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+function getConfigTem(config) {
+  return `const config = ${JSON.stringify(config, null, 2)};
+export default config;`;
+}
+
 module.exports = {
   template: indexTemplate,
   consoleString,
+  parseSvg2Object,
+  parseSvg,
+  getConfigTem,
 };

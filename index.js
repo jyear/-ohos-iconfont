@@ -3,7 +3,13 @@ const fs = require("fs");
 const path = require("path");
 const rootPath = process.cwd();
 const xml2js = require("xml2js");
-const { template, consoleString } = require("./utils");
+const {
+  template,
+  consoleString,
+  parseSvg2Object,
+  parseSvg,
+  getConfigTem,
+} = require("./utils");
 const downloadFile = require("./download");
 const configJSONPath = path.join(rootPath, "./iconfont.json");
 const configJSPath = path.join(rootPath, "./iconfont.js");
@@ -26,49 +32,6 @@ if (!config.iconURL) {
 }
 
 const toDir = path.join(rootPath, config.save_dir);
-
-function parseSvg(str) {
-  return new Promise((resolve, reject) => {
-    xml2js.parseString(
-      `<svg>${str}</svg>`,
-      {
-        rootName: "svg",
-      },
-      (err, result) => {
-        if (result) {
-          resolve(result);
-        }
-      }
-    );
-  });
-}
-
-function parseSvg2Object(obj) {
-  const symbols = obj.svg.symbol;
-  const result = {};
-  symbols.forEach((item) => {
-    const id = item.$.id;
-    const usePaths = item.path.map((p) => {
-      return {
-        path: p.$.d,
-        fill: p.$.fill,
-      };
-    });
-
-    result[id] = {
-      id: item.$.id,
-      viewPort: item.$.viewBox,
-      paths: usePaths,
-    };
-  });
-  return result;
-}
-
-function getConfigTem(config) {
-  return `const config = ${JSON.stringify(config, null, 2)};
-export default config;`;
-}
-
 async function run() {
   if (!fs.existsSync(toDir)) {
     fs.mkdirSync(toDir);
