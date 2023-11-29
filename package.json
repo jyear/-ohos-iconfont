@@ -1,6 +1,6 @@
 {
   "name": "ohos-iconfont",
-  "version": "0.0.4-alpha",
+  "version": "0.0.5-alpha",
   "description": "create iconfont for harmonyOS",
   "keywords": [
     "iconfont",
@@ -18,11 +18,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.2",
+    "node-fetch": "^2.7.0",
+    "progress-stream": "^2.0.0",
     "xml2js": "^0.6.2"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jyear/-ohos-iconfont.git"
   }
 }

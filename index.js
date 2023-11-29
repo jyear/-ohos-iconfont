@@ -2,17 +2,30 @@
 const fs = require("fs");
 const path = require("path");
 const rootPath = process.cwd();
-const axios = require("axios");
 const xml2js = require("xml2js");
-const configPath = path.join(rootPath, "./iconfont.json");
+const { template, consoleString } = require("./utils");
+const downloadFile = require("./download");
+const configJSONPath = path.join(rootPath, "./iconfont.json");
+const configJSPath = path.join(rootPath, "./iconfont.js");
 
-const config = require(configPath);
+let config = null;
+if (fs.existsSync(configJSONPath)) {
+  config = require(configJSONPath);
+}
+if (fs.existsSync(configJSPath)) {
+  config = require(configJSPath);
+}
+
+if (!config) {
+  throw new Error(
+    "没查询到当前目录存在config,你可以使用iconfont.json 或者 iconfont.js来配置config"
+  );
+}
+if (!config.iconURL) {
+  throw new Error("无法获取iconURL,请确认iconfont.json文件配置");
+}
 
 const toDir = path.join(rootPath, config.save_dir);
-
-if (!fs.existsSync(toDir)) {
-  fs.mkdirSync(toDir);
-}
 
 function parseSvg(str) {
   return new Promise((resolve, reject) => {
@@ -35,7 +48,6 @@ function parseSvg2Object(obj) {
   const result = {};
   symbols.forEach((item) => {
     const id = item.$.id;
-
     const usePaths = item.path.map((p) => {
       return {
         path: p.$.d,
@@ -52,75 +64,28 @@ function parseSvg2Object(obj) {
   return result;
 }
 
-function genCode(config) {
-  const tem = `import iconConfig from './icon'
-
-interface IconConfig {
-  id: string;
-  viewPort: string
-  paths: Array<{
-    path: string;
-    fill: string;
-  }>
+function getConfigTem(config) {
+  return `const config = ${JSON.stringify(config, null, 2)};
+export default config;`;
 }
 
-@Component
-export default struct IconFont {
-  @Prop name: string;
-  @Prop fontSize: number;
-  @Prop color: string;
-  @State curIcon: IconConfig | null = null
-  @State scaleNum: number = 1
-
-  aboutToAppear() {
-    this.curIcon = iconConfig[this.name];
-    this.scaleNum = this.fontSize / 1024
+async function run() {
+  if (!fs.existsSync(toDir)) {
+    fs.mkdirSync(toDir);
   }
-
-  build() {
-    Row() {
-      if (this.curIcon && this.curIcon.paths) {
-        Shape() {
-          ForEach(this.curIcon.paths, (item) => {
-            Path()
-              .commands(item.path)
-              .fill(this.color || item.fill)
-              .width('100%')
-              .height('100%')
-              .antiAlias(true)
-              .scale({ x: this.scaleNum * 3, y: this.scaleNum * 3, centerX: '0', centerY: '0' })
-          })
-        }
-        .viewPort({ x: 0, y: 0, width: 1024, height: 1024 })
-        .width(this.fontSize)
-        .height(this.fontSize)
-        .antiAlias(true)
-      }
-    }
-  }
-}`;
-
-  fs.writeFileSync(
-    path.join(toDir, "./icon.ets"),
-    `const config = ${JSON.stringify(config, null, 2)};
-  export default config;
-    `
-  );
-  fs.writeFileSync(path.join(toDir, "./index.ets"), tem);
-  console.log("生成完毕");
-}
-
-async function run(url) {
-  const res = await axios.get(url).catch(() => {
-    console.log("获取iconfont失败");
-  });
-  const mathes_1 = String(res.data).match(/'<svg>(.+?)<\/svg>'/);
+  const res = await downloadFile(config.iconURL);
+  const mathes_1 = String(res).match(/'<svg>(.+?)<\/svg>'/);
   if (!mathes_1[1]) {
     throw new Error("无法解析出正确的SVG");
   }
+  consoleString(`开始解析iconfont文件`, "green");
   const result = await parseSvg(mathes_1[1]);
   const iconObj = parseSvg2Object(result);
-  genCode(iconObj);
+  const iconStr = getConfigTem(iconObj);
+  consoleString(`解析完毕，开始生成文件`, "green");
+  fs.writeFileSync(path.join(toDir, "./index.ets"), template);
+  fs.writeFileSync(path.join(toDir, "./icon.ets"), iconStr);
+  consoleString(`生成文件完毕，Success`, "green");
 }
 
-run(config.iconURL);
+run();

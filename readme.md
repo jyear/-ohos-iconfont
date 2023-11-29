@@ -1,10 +1,17 @@
 ## ohos-iconfont
 基于iconfont的生成鸿蒙系统图标库
 
-在项目根目录创建iconfont.json
+在项目根目录创建iconfont.json或者iconfont.js
 
 ```
 {
+  "iconURL": "xxx", //https://iconfont内的symbol地址
+  "save_dir": "./entry/src/main/ets/components/iconfont" //生成后的代码到处地址
+}
+
+or
+
+module.exports={
   "iconURL": "xxx", //https://iconfont内的symbol地址
   "save_dir": "./entry/src/main/ets/components/iconfont" //生成后的代码到处地址
 }
