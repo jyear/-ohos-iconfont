@@ -3,7 +3,8 @@ const fs = require("fs");
 const path = require("path");
 const progressStream = require("progress-stream");
 const cachePath = path.join(__dirname, "./cache");
-const { consoleString } = require("./utils");
+const { consoleString, getfilesize } = require("./utils");
+const log = require("single-line-log").stdout;
 
 const downloadIconfont = function (url) {
   return new Promise((resolve, reject) => {
@@ -26,9 +27,12 @@ const downloadIconfont = function (url) {
 
     let writeStream = null;
 
-    fetch(url).then((res) => {
+    fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/octet-stream" },
+    }).then((res) => {
       let h = {};
-      res.headers.forEach(function (v, i, a) {
+      res.headers.forEach(function (v, i) {
         h[i.toLowerCase()] = v;
       });
       const suffix = fileExt[h["content-type"]];
@@ -42,12 +46,11 @@ const downloadIconfont = function (url) {
       );
       // 进度
       let progress = progressStream({
-        length: h["content-length"],
-        time: 5 /* ms */,
+        //length: h["content-length"],
+        time: 20 /* ms */,
       });
       progress.on("progress", function (progressData) {
-        let percentage = Math.round(progressData.percentage) + "%";
-        consoleString(`下载中...${percentage}`, "green");
+        log(`下载中...已下载:${getfilesize(progressData.transferred)}`);
       });
 
       writeStream = fs
@@ -66,6 +69,7 @@ const downloadIconfont = function (url) {
           fs.renameSync(tmpFileSavePath, fileSavePath);
           resolve(fs.readFileSync(fileSavePath, "utf8"));
           fs.unlinkSync(fileSavePath);
+          consoleString(" ");
           consoleString(`文件下载完成,即将开始生成`, "green");
         });
 

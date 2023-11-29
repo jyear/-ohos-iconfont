@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 const rootPath = process.cwd();
-const xml2js = require("xml2js");
+
 const {
   template,
   consoleString,

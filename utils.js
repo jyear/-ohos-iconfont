@@ -1,3 +1,4 @@
+const xml2js = require("xml2js");
 const indexTemplate = `import iconConfig from './icon'
 
 interface IconConfig {
@@ -101,10 +102,23 @@ function getConfigTem(config) {
 export default config;`;
 }
 
+function getfilesize(size) {
+  if (!size) return "";
+  var num = 1024.0; //byte
+  if (size < num) return size + "byte";
+  if (size < Math.pow(num, 2)) return (size / num).toFixed(2) + "Kb"; //kb
+  if (size < Math.pow(num, 3))
+    return (size / Math.pow(num, 2)).toFixed(2) + "Mb"; //M
+  if (size < Math.pow(num, 4))
+    return (size / Math.pow(num, 3)).toFixed(2) + "Gb"; //G
+  return (size / Math.pow(num, 4)).toFixed(2) + "Tb"; //T
+}
+
 module.exports = {
   template: indexTemplate,
   consoleString,
   parseSvg2Object,
   parseSvg,
   getConfigTem,
+  getfilesize,
 };
